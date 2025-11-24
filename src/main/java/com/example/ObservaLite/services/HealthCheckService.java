@@ -1,6 +1,7 @@
 package com.example.ObservaLite.services;
 
 
+import com.example.ObservaLite.dtos.HealthCheckResponse;
 import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Project;
@@ -35,13 +36,15 @@ public class HealthCheckService {
         this.exceptionLogRepository = exceptionLogRepository;
     }
 
-    public void runCheck(Project project) throws IOException, InterruptedException {
+    public HealthCheckResponse runCheck(Project project) throws IOException, InterruptedException {
         String urlBuild = UrlBuilder.UrlBuilder(project.getUrl());
-        System.out.println(urlBuild);
         HttpClient client = HttpClient.newHttpClient();
+        String userAgent = "ObservaLite/1.0";
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(urlBuild))
                 .timeout(Duration.ofSeconds(10))
+                .header("User-Agent", userAgent)
                 .GET()
                 .build();
 
@@ -64,6 +67,7 @@ public class HealthCheckService {
                 exceptionLogRepository.save(exceptionLog);
             }
         }
+
         InetAddress[] addresses = InetAddress.getAllByName(url.getHost());
         String dnsSummary = Arrays.stream(addresses)
                 .map(InetAddress::getHostAddress)
@@ -78,6 +82,10 @@ public class HealthCheckService {
         result.setCheckedAt(Instant.now());
         result.setSslDaysRemaining(daysRemaining);
         result.setDnsSummary(dnsSummary);
-        healthCheckResultRepository.save(result);
+
+        result = healthCheckResultRepository.save(result);
+
+        return new HealthCheckResponse(result, userAgent);
     }
+
 }
