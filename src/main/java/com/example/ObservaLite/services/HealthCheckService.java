@@ -5,6 +5,7 @@ import com.example.ObservaLite.dtos.HealthCheckResponse;
 import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Project;
+import com.example.ObservaLite.entities.enums.IncidentType;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.HealthCheckResultRepository;
 import com.example.ObservaLite.utils.UrlBuilder;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,10 +32,14 @@ public class HealthCheckService {
 
     private final HealthCheckResultRepository healthCheckResultRepository;
     private final ExceptionLogRepository exceptionLogRepository;
+    private final IncidentService incidentService;
 
-    public  HealthCheckService(HealthCheckResultRepository healthCheckResultRepository, ExceptionLogRepository exceptionLogRepository) {
+    public  HealthCheckService(HealthCheckResultRepository healthCheckResultRepository,
+                               ExceptionLogRepository exceptionLogRepository,
+                               IncidentService incidentService) {
         this.healthCheckResultRepository = healthCheckResultRepository;
         this.exceptionLogRepository = exceptionLogRepository;
+        this.incidentService = incidentService;
     }
 
     public HealthCheckResponse runCheck(Project project) throws IOException, InterruptedException {
@@ -84,6 +90,46 @@ public class HealthCheckService {
         result.setDnsSummary(dnsSummary);
 
         result = healthCheckResultRepository.save(result);
+
+        if (!result.isHealthy()) {
+            incidentService.handleIncident(project, IncidentType.PROJECT_DOWN,
+                    "HTTP status: " + result.getStatusCode());
+        } else {
+            incidentService.resolveIncident(project, IncidentType.PROJECT_DOWN);
+        }
+
+
+        if (result.getSslDaysRemaining() >= 0 && result.getSslDaysRemaining() < 7) {
+            incidentService.handleIncident(project, IncidentType.SSL_EXPIRING,
+                    "SSL expires in " + result.getSslDaysRemaining() + " days");
+        } else {
+            incidentService.resolveIncident(project, IncidentType.SSL_EXPIRING);
+        }
+
+        Instant window = Instant.now().minus(Duration.ofMinutes(5));
+        int errors = healthCheckResultRepository.countErrorsSince(project, window);
+
+        int limit = 5;
+        if (errors >= limit) {
+            incidentService.handleIncident(project, IncidentType.ERROR_SPIKE,
+                    "High error rate in last 5 minutes: " + errors);
+        } else {
+            incidentService.resolveIncident(project, IncidentType.ERROR_SPIKE);
+        }
+
+        List<HealthCheckResult> last3 = healthCheckResultRepository
+                .findTop3ByProjectOrderByCheckedAtDesc(project);
+
+        boolean allFailed = !last3.isEmpty()
+                && last3.size() == 3
+                && last3.stream().allMatch(h -> !h.isHealthy());
+
+        if (allFailed) {
+            incidentService.handleIncident(project, IncidentType.DOWNTIME,
+                    "3 consecutive failed health checks");
+        } else {
+            incidentService.resolveIncident(project, IncidentType.DOWNTIME);
+        }
 
         return new HealthCheckResponse(result, userAgent);
     }

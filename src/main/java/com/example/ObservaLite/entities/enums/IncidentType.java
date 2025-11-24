@@ -4,7 +4,8 @@ public enum IncidentType {
 	DOWNTIME("Downtime"), 
 	ERROR_SPIKE("Error spike"),
 	SSL_EXPIRING("SSL Expiring"),
-	DNS_CHANGE("DNS Change");
+	DNS_CHANGE("DNS Change"),
+    PROJECT_DOWN("Project down");
 	
 	private String incident;
 	
