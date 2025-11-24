@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: observalite-postgres
+    environment:
+      POSTGRES_DB: observalite
+      POSTGRES_USER: joao
+      POSTGRES_PASSWORD: 123456789
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - observalite-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: observalite-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@observalite.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"
+    networks:
+      - observalite-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  observalite-network:
+    driver: bridge
