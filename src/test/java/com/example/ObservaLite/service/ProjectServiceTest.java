@@ -40,9 +40,9 @@ public class ProjectServiceTest {
     void testCreateProject() {
         ProjectCreateDto dto = new ProjectCreateDto(
                 "Projeto Teste",
-                "https://www.teste.com.br",
+                "www.joaonevesdev.com.br",
                 "keycript",
-                Duration.ofMinutes(5)
+                520
         );
 
         UUID random = UUID.randomUUID();
@@ -50,9 +50,9 @@ public class ProjectServiceTest {
         Project savedProject = new Project();
         savedProject.setId(random);
         savedProject.setName("Projeto Teste");
-        savedProject.setUrl("https://www.teste.com.br");
+        savedProject.setUrl("www.joaonevesdev.com.br");
         savedProject.setApiKeyHash("keycript");
-        savedProject.setCheckInterval(Duration.ofMinutes(5));
+        savedProject.setCheckInterval(520);
 
         when(projectRepository.save(any(Project.class))).thenReturn(savedProject);
         when(hashService.hash(anyString())).thenReturn("hashedKey");
@@ -63,7 +63,7 @@ public class ProjectServiceTest {
         assertNotNull(response);
         assertEquals(random, response.getId());
         assertEquals("Projeto Teste", response.getName());
-        assertEquals("https://www.teste.com.br", response.getUrl());
+        assertEquals("www.joaonevesdev.com.br", response.getUrl());
 
         verify(hashService, times(1)).hash("keycript");
         verify(projectRepository, times(1)).save(any(Project.class));
@@ -82,9 +82,9 @@ public class ProjectServiceTest {
     void testListProjectReturnNotEmpty() {
         ProjectCreateDto dto = new ProjectCreateDto(
                 "Projeto Teste",
-                "https://www.teste.com.br",
+                "www.joaonevesdev.com.br",
                 "keycript",
-                Duration.ofMinutes(5)
+                520
         );
 
         UUID random = UUID.randomUUID();
@@ -92,9 +92,9 @@ public class ProjectServiceTest {
         Project savedProject = new Project();
         savedProject.setId(random);
         savedProject.setName("Projeto Teste");
-        savedProject.setUrl("https://www.teste.com.br");
+        savedProject.setUrl("www.joaonevesdev.com.br");
         savedProject.setApiKeyHash("keycript");
-        savedProject.setCheckInterval(Duration.ofMinutes(5));
+        savedProject.setCheckInterval(520);
 
         when(projectRepository.findAll()).thenReturn(List.of(savedProject));
 
@@ -117,9 +117,9 @@ public class ProjectServiceTest {
     void testFindByIdAndReturnProject() {
         ProjectCreateDto dto = new ProjectCreateDto(
                 "Projeto Teste",
-                "https://www.teste.com.br",
+                "www.joaonevesdev.com.br",
                 "keycript",
-                Duration.ofMinutes(5)
+                520
         );
 
         UUID random = UUID.randomUUID();
@@ -127,9 +127,9 @@ public class ProjectServiceTest {
         Project savedProject = new Project();
         savedProject.setId(random);
         savedProject.setName("Projeto Teste");
-        savedProject.setUrl("https://www.teste.com.br");
+        savedProject.setUrl("www.joaonevesdev.com.br");
         savedProject.setApiKeyHash("keycript");
-        savedProject.setCheckInterval(Duration.ofMinutes(5));
+        savedProject.setCheckInterval(520);
         Optional<Project> optional = Optional.of(savedProject);
 
         when(projectRepository.findById(random)).thenReturn(optional);
@@ -137,7 +137,7 @@ public class ProjectServiceTest {
         ProjectResponseDto responseDto = projectService.getProject(random);
 
         assertEquals("Projeto Teste", responseDto.getName());
-        assertEquals("https://www.teste.com.br", responseDto.getUrl());
+        assertEquals("www.joaonevesdev.com.br", responseDto.getUrl());
     }
 
     @Test

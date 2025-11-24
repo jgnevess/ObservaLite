@@ -37,6 +37,10 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProject(id));
     }
 
+    @PutMapping("project/update/{id}")
+    public ResponseEntity<ProjectResponseDto> updateProject(@PathVariable UUID id, @RequestBody ProjectCreateDto projectCreateDto) {
+        return ResponseEntity.ok(projectService.updateProject(projectCreateDto, id));
+    }
     @DeleteMapping("project/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable UUID id) {
         projectService.deleteProject(id);

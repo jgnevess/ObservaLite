@@ -31,11 +31,12 @@ public class Project {
 	private UUID id;
 	private String name;
 	private String url;
-	private Duration checkInterval;
+	private long checkInterval;
 	private ProjectStatus projectStatus;
 	private String apiKeyHash;
 	private Instant createdAt;
 	private Instant updatedAt;
+    private Instant lastCheckedAt;
 
     @OneToMany
     @JsonIgnore
@@ -50,7 +51,7 @@ public class Project {
     public Project(ProjectCreateDto projectCreateDto, String  apiKey) {
         this.name = projectCreateDto.name();
         this.url = projectCreateDto.url();
-        this.checkInterval = projectCreateDto.checkInterval();
+        this.checkInterval = projectCreateDto.checkInterval() * 1000L;
         this.projectStatus = ProjectStatus.HEALTHY;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();

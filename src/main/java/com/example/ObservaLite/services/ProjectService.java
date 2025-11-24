@@ -8,6 +8,7 @@ import com.example.ObservaLite.repositories.ProjectRepository;
 import com.example.ObservaLite.services.utils.HashService;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +42,22 @@ public class ProjectService {
     public ProjectResponseDto getProject(UUID id) {
         return new ProjectResponseDto(projectRepository
                 .findById(id).orElseThrow(() -> new ProjectNotFoundException(404, "Project not found")));
+    }
+
+    public ProjectResponseDto updateProject(ProjectCreateDto projectCreateDto, UUID id) {
+        Project project = projectRepository.findById(id).orElseThrow(() -> new ProjectNotFoundException(404, "Project not found"));
+        String apiKey = hashService.hash(projectCreateDto.apiKey());
+        try {
+            ConnectionService.Connect(projectCreateDto.url());
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+        project.setUrl(projectCreateDto.url());
+        project.setCheckInterval(projectCreateDto.checkInterval() * 1000L);
+        project.setName(projectCreateDto.name());
+        project.setApiKeyHash(apiKey);
+        project.setUpdatedAt(Instant.now());
+        return new ProjectResponseDto(projectRepository.save(project));
     }
 
     public void deleteProject(UUID id) {

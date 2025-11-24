@@ -9,9 +9,9 @@ import java.time.Duration;
 public record ProjectCreateDto(
         String name,
         String url,
+        @Schema(type = "text", description = "A sua chave de api será criptografada em nosso banco de dados")
         String apiKey,
-        @JsonDeserialize(using = DurationDeserializer.class)
-        @Schema(type = "object", example = "{ \"seconds\": 30 }")
-        Duration checkInterval
+        @Schema(type = "integer", example = "520", description = "Intervalo em segundos")
+        long checkInterval
 ) {
 }

@@ -29,7 +29,6 @@ public class HealthCheckResult {
 	private String dnsSummary;
 	private boolean isHealthy;
 	private Instant checkedAt;
-    @Lob
     @Column(columnDefinition = "TEXT")
 	private String rawResponse;
 	

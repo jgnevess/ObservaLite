@@ -19,7 +19,7 @@ public class LogEntryService {
         this.logEntryRepository = logEntryRepository;
     }
 
-    public LogEntry createLog(HealthCheckResponse healthCheckResponse) {
+    public void createLog(HealthCheckResponse healthCheckResponse) {
         HealthCheckResult healthCheckResult = healthCheckResponse.getResult();
         LogEntry logEntry = new LogEntry();
         LogLevel level;
@@ -39,6 +39,6 @@ public class LogEntryService {
         logEntry.setLevel(level);
         logEntry.setMetadata(metadata);
 
-        return logEntryRepository.save(logEntry);
+        var res = logEntryRepository.save(logEntry);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,14 +39,15 @@ public class Worker {
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(404, "Project Not Found"));
         try {
             HealthCheckResponse result = healthCheckService.runCheck(project);
-            LogEntry logEntry = logEntryService.createLog(result);
+            logEntryService.createLog(result);
+            project.setLastCheckedAt(Instant.now());
+            projectRepository.save(project);
         } catch (IOException | InterruptedException ex) {
             ExceptionLog exceptionLog = new ExceptionLog();
             exceptionLog.setProject(project);
             exceptionLog.setMessage(ex.getMessage());
             exceptionLogRepository.save(exceptionLog);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ExceptionLog exceptionLog = new ExceptionLog();
             exceptionLog.setProject(project);
             exceptionLog.setMessage(ex.getMessage());
@@ -54,7 +56,6 @@ public class Worker {
     }
 
     @Scheduled(fixedDelay = 3600000)
-//    @Scheduled(fixedDelay = 60000)
     public void scheduleAll() {
         List<Project> projects = projectRepository.findAll();
         for (Project project : projects) {
@@ -69,4 +70,27 @@ public class Worker {
             }
         }
     }
+
+    @Scheduled(fixedRate = 60000)
+    public void runHealthChecks() {
+        List<Project> projects = projectRepository.findAll();
+        Instant now = Instant.now();
+
+        for (Project p : projects) {
+            boolean shouldRun = p.getLastCheckedAt() == null ||
+                    p.getLastCheckedAt()
+                            .plusMillis(p.getCheckInterval())
+                            .isBefore(now);
+
+            if (shouldRun) {
+                try {
+                    runNow(p.getId());
+                } finally {
+                    p.setLastCheckedAt(now);
+                    projectRepository.save(p);
+                }
+            }
+        }
+    }
+
 }
