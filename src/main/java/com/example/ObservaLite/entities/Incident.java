@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.example.ObservaLite.entities.enums.IncidentStatus;
 import com.example.ObservaLite.entities.enums.IncidentType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,6 +24,7 @@ public class Incident {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+    @JsonIgnore
     @ManyToOne
 	private Project project;
 	private IncidentType type;

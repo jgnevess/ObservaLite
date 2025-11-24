@@ -2,6 +2,8 @@ package com.example.ObservaLite.repositories;
 
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,4 +23,6 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
     int countErrorsSince(Project project, Instant since);
 
     List<HealthCheckResult> findTop3ByProjectOrderByCheckedAtDesc(Project project);
+
+    Page<HealthCheckResult> findByProjectId(UUID projectId, Pageable pageable);
 }

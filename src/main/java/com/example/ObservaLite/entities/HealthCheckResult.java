@@ -3,6 +3,7 @@ package com.example.ObservaLite.entities;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -20,6 +21,7 @@ public class HealthCheckResult {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+    @JsonIgnore
     @ManyToOne
 	private Project project;
 	private int statusCode;

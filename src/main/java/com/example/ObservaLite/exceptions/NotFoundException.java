@@ -3,10 +3,10 @@ package com.example.ObservaLite.exceptions;
 import lombok.Getter;
 
 @Getter
-public class ProjectNotFoundException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
     private final int status;
 
-    public ProjectNotFoundException(int status, String message) {
+    public NotFoundException(int status, String message) {
         super(message);
         this.status = status;
     }

@@ -3,7 +3,7 @@ package com.example.ObservaLite.services;
 import com.example.ObservaLite.dtos.ProjectCreateDto;
 import com.example.ObservaLite.dtos.ProjectResponseDto;
 import com.example.ObservaLite.entities.Project;
-import com.example.ObservaLite.exceptions.ProjectNotFoundException;
+import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ProjectRepository;
 import com.example.ObservaLite.services.utils.HashService;
 import org.springframework.stereotype.Service;
@@ -41,11 +41,11 @@ public class ProjectService {
 
     public ProjectResponseDto getProject(UUID id) {
         return new ProjectResponseDto(projectRepository
-                .findById(id).orElseThrow(() -> new ProjectNotFoundException(404, "Project not found")));
+                .findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found")));
     }
 
     public ProjectResponseDto updateProject(ProjectCreateDto projectCreateDto, UUID id) {
-        Project project = projectRepository.findById(id).orElseThrow(() -> new ProjectNotFoundException(404, "Project not found"));
+        Project project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
         String apiKey = hashService.hash(projectCreateDto.apiKey());
         try {
             ConnectionService.Connect(projectCreateDto.url());
@@ -61,7 +61,7 @@ public class ProjectService {
     }
 
     public void deleteProject(UUID id) {
-        Project project = projectRepository.findById(id).orElseThrow(() -> new ProjectNotFoundException(404, "Project not found"));
+        Project project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
         projectRepository.delete(project);
     }
 }

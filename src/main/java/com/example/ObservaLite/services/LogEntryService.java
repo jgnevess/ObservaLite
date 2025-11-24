@@ -1,14 +1,21 @@
 package com.example.ObservaLite.services;
 
 import com.example.ObservaLite.dtos.HealthCheckResponse;
+import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.LogEntry;
 import com.example.ObservaLite.entities.utils.Metadata;
+import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.LogEntryRepository;
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class LogEntryService {
@@ -40,5 +47,14 @@ public class LogEntryService {
         logEntry.setMetadata(metadata);
 
         var res = logEntryRepository.save(logEntry);
+    }
+
+    public Page<LogEntry> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("level").descending());
+        return logEntryRepository.findByProjectId(projectId, pageable);
+    }
+
+    public LogEntry getById(UUID id) {
+        return logEntryRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Log not found"));
     }
 }

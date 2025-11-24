@@ -6,9 +6,14 @@ import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Project;
 import com.example.ObservaLite.entities.enums.IncidentType;
+import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.HealthCheckResultRepository;
 import com.example.ObservaLite.utils.UrlBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -25,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -132,6 +138,15 @@ public class HealthCheckService {
         }
 
         return new HealthCheckResponse(result, userAgent);
+    }
+
+    public Page<HealthCheckResult> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("checkedAt").descending());
+        return healthCheckResultRepository.findByProjectId(projectId, pageable);
+    }
+
+    public HealthCheckResult getById(UUID healthCheckId) {
+        return healthCheckResultRepository.findById(healthCheckId).orElseThrow(() -> new NotFoundException(404 ,"Health check not found"));
     }
 
 }

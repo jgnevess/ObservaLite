@@ -3,6 +3,7 @@ package com.example.ObservaLite.entities;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.boot.logging.LogLevel;
 
@@ -24,6 +25,7 @@ public class LogEntry {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
+    @JsonIgnore
     @ManyToOne
 	private Project project;
 	private LogLevel level;

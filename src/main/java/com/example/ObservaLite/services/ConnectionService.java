@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 
-public class ConnectionService {
+public abstract class ConnectionService {
 
     public static void Connect(String url) {
         try {

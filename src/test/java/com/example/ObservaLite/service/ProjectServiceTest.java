@@ -3,7 +3,7 @@ package com.example.ObservaLite.service;
 import com.example.ObservaLite.dtos.ProjectCreateDto;
 import com.example.ObservaLite.dtos.ProjectResponseDto;
 import com.example.ObservaLite.entities.Project;
-import com.example.ObservaLite.exceptions.ProjectNotFoundException;
+import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ProjectRepository;
 import com.example.ObservaLite.services.ProjectService;
 import com.example.ObservaLite.services.utils.HashService;
@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -106,7 +105,7 @@ public class ProjectServiceTest {
 
     @Test
     void testFindByIdAndReturnException() {
-        ProjectNotFoundException exception = assertThrows(ProjectNotFoundException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> projectService.getProject(UUID.randomUUID()));
 
         assertEquals(404, exception.getStatus());
@@ -142,7 +141,7 @@ public class ProjectServiceTest {
 
     @Test
     void testDeleteShouldException() {
-        ProjectNotFoundException exception = assertThrows(ProjectNotFoundException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> projectService.deleteProject(UUID.randomUUID()));
 
         assertEquals(404, exception.getStatus());

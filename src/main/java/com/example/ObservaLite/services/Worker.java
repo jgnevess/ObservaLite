@@ -2,17 +2,14 @@ package com.example.ObservaLite.services;
 
 import com.example.ObservaLite.dtos.HealthCheckResponse;
 import com.example.ObservaLite.entities.ExceptionLog;
-import com.example.ObservaLite.entities.HealthCheckResult;
-import com.example.ObservaLite.entities.LogEntry;
 import com.example.ObservaLite.entities.Project;
-import com.example.ObservaLite.exceptions.ProjectNotFoundException;
+import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.ProjectRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +33,7 @@ public class Worker {
     }
 
     public void runNow(UUID projectId) {
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(404, "Project Not Found"));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new NotFoundException(404, "Project Not Found"));
         try {
             HealthCheckResponse result = healthCheckService.runCheck(project);
             logEntryService.createLog(result);
@@ -62,7 +59,7 @@ public class Worker {
             try {
                 runNow(project.getId());
             }
-            catch (ProjectNotFoundException ex) {
+            catch (NotFoundException ex) {
                 ExceptionLog exceptionLog = new ExceptionLog();
                 exceptionLog.setProject(project);
                 exceptionLog.setMessage(ex.getMessage());
