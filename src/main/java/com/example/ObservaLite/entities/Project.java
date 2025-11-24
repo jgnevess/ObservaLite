@@ -40,10 +40,10 @@ public class Project {
     @OneToMany
     @JsonIgnore
 	private List<HealthCheckResult> checks;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JsonIgnore
 	private List<LogEntry> logs;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JsonIgnore
 	private List<Incident> incidents;
 

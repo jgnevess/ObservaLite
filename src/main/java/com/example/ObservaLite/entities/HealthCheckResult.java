@@ -25,9 +25,12 @@ public class HealthCheckResult {
 	private int statusCode;
 	private long latencyMs;
 	private int sslDaysRemaining;
+    @Column(columnDefinition = "TEXT")
 	private String dnsSummary;
 	private boolean isHealthy;
 	private Instant checkedAt;
+    @Lob
+    @Column(columnDefinition = "TEXT")
 	private String rawResponse;
 	
 }

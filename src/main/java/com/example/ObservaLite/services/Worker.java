@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,10 +37,15 @@ public class Worker {
     public void runNow(UUID projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException(404, "Project Not Found"));
         try {
-
             HealthCheckResponse result = healthCheckService.runCheck(project);
             LogEntry logEntry = logEntryService.createLog(result);
         } catch (IOException | InterruptedException ex) {
+            ExceptionLog exceptionLog = new ExceptionLog();
+            exceptionLog.setProject(project);
+            exceptionLog.setMessage(ex.getMessage());
+            exceptionLogRepository.save(exceptionLog);
+        }
+        catch (Exception ex) {
             ExceptionLog exceptionLog = new ExceptionLog();
             exceptionLog.setProject(project);
             exceptionLog.setMessage(ex.getMessage());

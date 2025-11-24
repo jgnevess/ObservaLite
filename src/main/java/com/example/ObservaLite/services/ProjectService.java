@@ -25,6 +25,11 @@ public class ProjectService {
 
     public ProjectResponseDto createProject(ProjectCreateDto projectCreateDto) {
         String apiKey = hashService.hash(projectCreateDto.apiKey());
+        try {
+            ConnectionService.Connect(projectCreateDto.url());
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
         Project project = new Project(projectCreateDto, apiKey);
         return  new ProjectResponseDto(projectRepository.save(project));
     }
