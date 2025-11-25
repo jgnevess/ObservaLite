@@ -41,12 +41,16 @@ public class Project {
     @OneToMany
     @JsonIgnore
 	private List<HealthCheckResult> checks;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.REMOVE)
     @JsonIgnore
 	private List<LogEntry> logs;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.REMOVE)
     @JsonIgnore
 	private List<Incident> incidents;
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<ExceptionLog> exceptions;
+
 
     public Project(ProjectCreateDto projectCreateDto, String  apiKey) {
         this.name = projectCreateDto.name();

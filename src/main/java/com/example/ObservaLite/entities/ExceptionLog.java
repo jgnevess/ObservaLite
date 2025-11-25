@@ -18,7 +18,7 @@ public class ExceptionLog {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Project project;
     private String message;
 }
