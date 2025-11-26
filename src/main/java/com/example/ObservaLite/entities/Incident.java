@@ -25,11 +25,13 @@ public class Incident {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
 	private Project project;
+	@Column(name = "incident_type")
 	private IncidentType type;
 	private String details;
 	private Instant occurredAt;
 	private Instant resolvedAt;
+	@Column(name = "incident_status")
 	private IncidentStatus status;
 }

@@ -38,17 +38,17 @@ public class Project {
 	private Instant updatedAt;
     private Instant lastCheckedAt;
 
-    @OneToMany
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonIgnore
 	private List<HealthCheckResult> checks;
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonIgnore
 	private List<LogEntry> logs;
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonIgnore
 	private List<Incident> incidents;
+    @OneToMany(mappedBy = "project", cascade = CascadeType.REMOVE)
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE)
     private List<ExceptionLog> exceptions;
 
 

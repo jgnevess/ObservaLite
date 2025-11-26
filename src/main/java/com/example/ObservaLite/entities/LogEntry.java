@@ -26,11 +26,12 @@ public class LogEntry {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
 	private Project project;
 	private LogLevel level;
 	private String message;
 	@Embedded
 	private Metadata metadata;
+	@Column(name = "log_timestamp")
 	private Instant timestamp;
 }

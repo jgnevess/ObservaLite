@@ -22,7 +22,7 @@ public class HealthCheckResult {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
 	private Project project;
 	private int statusCode;
 	private long latencyMs;
