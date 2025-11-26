@@ -8,14 +8,15 @@ import com.example.ObservaLite.entities.utils.Metadata;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.LogEntryRepository;
 import org.springframework.boot.logging.LogLevel;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class LogEntryService {
@@ -47,6 +48,18 @@ public class LogEntryService {
         logEntry.setMetadata(metadata);
 
         var res = logEntryRepository.save(logEntry);
+    }
+
+    public Page<LogEntry> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<LogEntry> page = logEntryRepository.findByProjectId(projectId, pageable);
+        List<LogEntry> filtered = page.getContent().stream()
+                .filter(le -> le.getProject().getLastCheckedAt().isAfter(startInstant) && le.getProject().getLastCheckedAt().isBefore(endInstant))
+                .collect(Collectors.toList());
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
     public Page<LogEntry> getByProjectId(UUID projectId, int pageNumber, int pageSize) {

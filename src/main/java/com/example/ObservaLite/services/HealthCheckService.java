@@ -10,10 +10,7 @@ import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.HealthCheckResultRepository;
 import com.example.ObservaLite.utils.UrlBuilder;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -27,7 +24,10 @@ import java.net.http.HttpResponse;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -138,6 +138,18 @@ public class HealthCheckService {
         }
 
         return new HealthCheckResponse(result, userAgent);
+    }
+
+    public Page<HealthCheckResult> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("checkedAt").descending());
+        Page<HealthCheckResult> page = healthCheckResultRepository.findByProjectId(projectId, pageable);
+        List<HealthCheckResult> filtered = page.getContent().stream()
+                .filter(hc -> hc.getCheckedAt().isAfter(startInstant) && hc.getCheckedAt().isBefore(endInstant))
+                .collect(Collectors.toList());
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
     public Page<HealthCheckResult> getByProjectId(UUID projectId, int pageNumber, int pageSize) {

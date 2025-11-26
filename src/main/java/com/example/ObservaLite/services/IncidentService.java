@@ -7,15 +7,16 @@ import com.example.ObservaLite.entities.enums.IncidentStatus;
 import com.example.ObservaLite.entities.enums.IncidentType;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.IncidentRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class IncidentService {
@@ -68,5 +69,17 @@ public class IncidentService {
 
     public Incident getById(UUID id) {
         return incidentRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Incident not found"));
+    }
+
+    public Page<Incident> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Incident> page = incidentRepository.findByProjectId(projectId, pageable);
+        List<Incident> filtered = page.getContent().stream()
+                .filter(i -> i.getProject().getLastCheckedAt().isAfter(startInstant) && i.getProject().getLastCheckedAt().isBefore(endInstant))
+                .collect(Collectors.toList());
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 }
