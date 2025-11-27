@@ -28,7 +28,7 @@ public class IncidentsController {
     }
 
     @Operation(summary = "Endpoint busca todos os incidents pelo id do projeto, dentro de um periodo e páginados.")
-    @GetMapping("/{projectId}/healthy-checks/date-between")
+    @GetMapping("/{projectId}/incidents/date-between")
     public ResponseEntity<Page<Incident>> listByProjectFilter(@PathVariable UUID projectId, int pageNumber, int pageSize, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(incidentService.getByProjectIdAndPeriod(projectId, pageNumber, pageSize, startDate, endDate));
     }

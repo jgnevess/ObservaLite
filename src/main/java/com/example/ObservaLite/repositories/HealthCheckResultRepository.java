@@ -25,4 +25,5 @@ public interface HealthCheckResultRepository extends JpaRepository<HealthCheckRe
     List<HealthCheckResult> findTop3ByProjectOrderByCheckedAtDesc(Project project);
 
     Page<HealthCheckResult> findByProjectId(UUID projectId, Pageable pageable);
+    List<HealthCheckResult> findByProjectId(UUID projectId);
 }

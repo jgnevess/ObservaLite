@@ -3,15 +3,17 @@ package com.example.ObservaLite.controller;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.services.HealthCheckService;
 
+import com.example.ObservaLite.services.utils.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -45,5 +47,13 @@ public class HealthCheckController {
     }
 
 
+    @GetMapping("/{projectId}/csv-download")
+    public ResponseEntity<Resource> downloadCsvReport(@PathVariable UUID projectId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Resource csv = healthCheckService.getReportByProjectIdAndPeriod(projectId, startDate, endDate);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"dados.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
+    }
 
 }

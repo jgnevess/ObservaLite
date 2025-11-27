@@ -9,18 +9,23 @@ import com.example.ObservaLite.entities.enums.IncidentType;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.HealthCheckResultRepository;
+import com.example.ObservaLite.services.utils.FileService;
 import com.example.ObservaLite.utils.UrlBuilder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
@@ -159,6 +164,23 @@ public class HealthCheckService {
 
     public HealthCheckResult getById(UUID healthCheckId) {
         return healthCheckResultRepository.findById(healthCheckId).orElseThrow(() -> new NotFoundException(404 ,"Health check not found"));
+    }
+
+    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        List<HealthCheckResult> results = healthCheckResultRepository.findByProjectId(projectId);
+        List<HealthCheckResult> filtered = results.stream()
+                .filter(hc -> hc.getCheckedAt().isAfter(startInstant) && hc.getCheckedAt().isBefore(endInstant))
+                .collect(Collectors.toList());
+        String response = FileService.genReportHealthCheck(filtered);
+        Path path = Path.of(response);
+        try {
+            return new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
