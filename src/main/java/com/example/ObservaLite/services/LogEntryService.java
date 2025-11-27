@@ -3,14 +3,20 @@ package com.example.ObservaLite.services;
 import com.example.ObservaLite.dtos.HealthCheckResponse;
 import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.HealthCheckResult;
+import com.example.ObservaLite.entities.Incident;
 import com.example.ObservaLite.entities.LogEntry;
 import com.example.ObservaLite.entities.utils.Metadata;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.LogEntryRepository;
+import com.example.ObservaLite.services.utils.FileService;
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -69,5 +75,22 @@ public class LogEntryService {
 
     public LogEntry getById(UUID id) {
         return logEntryRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Log not found"));
+    }
+
+    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        List<LogEntry> results = logEntryRepository.findByProjectId(projectId);
+        List<LogEntry> filtered = results.stream()
+                .filter(entry -> entry.getTimestamp().isAfter(startInstant) && entry.getTimestamp().isBefore(endInstant))
+                .collect(Collectors.toList());
+        String response = FileService.genReportLogEntry(filtered);
+        Path path = Path.of(response);
+        try {
+            return new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

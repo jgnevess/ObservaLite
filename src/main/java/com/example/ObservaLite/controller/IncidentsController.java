@@ -5,8 +5,11 @@ import com.example.ObservaLite.entities.Incident;
 import com.example.ObservaLite.services.IncidentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,5 +46,14 @@ public class IncidentsController {
     @GetMapping("/{incidentId}")
     public ResponseEntity<Incident> listByProject(@PathVariable UUID incidentId) {
         return ResponseEntity.ok(incidentService.getById(incidentId));
+    }
+
+    @GetMapping("/{projectId}/csv-download")
+    public ResponseEntity<Resource> downloadCsvReport(@PathVariable UUID projectId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Resource csv = incidentService.getReportByProjectIdAndPeriod(projectId, startDate, endDate);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+csv.getFilename())
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
     }
 }

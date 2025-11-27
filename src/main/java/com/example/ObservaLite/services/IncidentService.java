@@ -1,5 +1,6 @@
 package com.example.ObservaLite.services;
 
+import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Incident;
 import com.example.ObservaLite.entities.LogEntry;
 import com.example.ObservaLite.entities.Project;
@@ -7,9 +8,14 @@ import com.example.ObservaLite.entities.enums.IncidentStatus;
 import com.example.ObservaLite.entities.enums.IncidentType;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.IncidentRepository;
+import com.example.ObservaLite.services.utils.FileService;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -81,5 +87,22 @@ public class IncidentService {
                 .filter(i -> i.getProject().getLastCheckedAt().isAfter(startInstant) && i.getProject().getLastCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
         return new PageImpl<>(filtered, pageable, filtered.size());
+    }
+
+    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+        Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
+
+        List<Incident> results = incidentRepository.findByProjectId(projectId);
+        List<Incident> filtered = results.stream()
+                .filter(ic -> ic.getProject().getLastCheckedAt().isAfter(startInstant) && ic.getProject().getLastCheckedAt().isBefore(endInstant))
+                .collect(Collectors.toList());
+        String response = FileService.genReportIncidents(filtered);
+        Path path = Path.of(response);
+        try {
+            return new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

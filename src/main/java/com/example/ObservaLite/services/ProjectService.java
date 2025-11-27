@@ -5,6 +5,7 @@ import com.example.ObservaLite.dtos.ProjectResponseDto;
 import com.example.ObservaLite.entities.Project;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ProjectRepository;
+import com.example.ObservaLite.services.utils.ConnectionService;
 import com.example.ObservaLite.services.utils.HashService;
 import org.springframework.stereotype.Service;
 

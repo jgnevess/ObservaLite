@@ -24,6 +24,10 @@ CREATE DATABASE healthcheck;
 ### 2. Configurar `application.properties`
 
 ``` properties
+spring.application.name=ObservaLite
+
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
 spring.datasource.url=jdbc:postgresql://localhost:5432/healthcheck
 spring.datasource.username=postgres
 spring.datasource.password=senha
@@ -33,12 +37,19 @@ spring.jpa.show-sql=true
 
 spring.flyway.enabled=true
 spring.flyway.locations=classpath:db/migration
+spring.flyway.baseline-on-migrate=true
+
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+
+management.endpoints.web.exposure.include=health,info,metrics
 ```
 
 ### 3. Rodar o projeto
 
 ``` bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 ## Migrações Flyway
@@ -63,24 +74,31 @@ Nunca editar migrações antigas. Criar novas versões sempre.
 
 ### Health Checks
 
-  | Método  | Rota                                              | Descrição |
-  |:-------:|:--------------------------------------------------|:---------:|
-  |   GET   | `/api/v1/health-checks/{projectId}/health-checks` |  Listar   |
-  |   GET   | `/api/v1/health-checks/{healthCheckId}`           |  Buscar   |
+  | Método  | Rota                                                           |     Descrição      |
+  |:-------:|:---------------------------------------------------------------|:------------------:|
+  |   GET   | `/api/v1/health-checks/{projectId}/health-checks`              |       Listar       |
+  |   GET   | `/api/v1/health-checks/{healthCheckId}`                        |       Buscar       |
+  |   GET   | `/api/v1/health-checks/{projectId}/health-checks/date-between` |  Listar filtrado   |
+  |   GET   | `/api/v1/health-checks/{projectId}/download-csv`               | Download relatório |
+
 
 ### Log Entry
 
-| Método  | Rota                            | Descrição |
-|:-------:|:--------------------------------|:---------:|
-|   GET   | `/api/v1/logs/{projectId}/logs` |  Listar   |
-|   GET   | `/api/v1/logs/{id}`             |  Buscar   |
+| Método  | Rota                                           |     Descrição      |
+|:-------:|:-----------------------------------------------|:------------------:|
+|   GET   | `/api/v1/logs/{projectId}/logs`                |       Listar       |
+|   GET   | `/api/v1/logs/{id}`                            |       Buscar       |
+|   GET   | `/api/v1/logs/{projectId}/logs/date-between`   |  Listar filtrado   |
+|   GET   | `/api/v1/logs/{projectId}/download-csv`        | Download relatório |
 
 ### Incidents
 
-| Método  | Rota                                      | Descrição |
-|:-------:|:------------------------------------------|:---------:|
-|   GET   | `/api/v1/incidents/{projectId}/incidents` |  Listar   |
-|   GET   | `/api/v1/incidents/{id}`                  |  Buscar   |
+| Método  | Rota                                                   |     Descrição      |
+|:-------:|:-------------------------------------------------------|:------------------:|
+|   GET   | `/api/v1/incidents/{projectId}/incidents`              |       Listar       |
+|   GET   | `/api/v1/incidents/{id}`                               |       Buscar       |
+|   GET   | `/api/v1/incidents/{projectId}/incidents/date-between` |  Listar filtrado   |
+|   GET   | `/api/v1/incidents/{projectId}/download-csv`           | Download relatório |
 
 ### Log Exceptions
 
@@ -89,28 +107,15 @@ Nunca editar migrações antigas. Criar novas versões sempre.
 |   GET   | `/api/v1/logs/{projectId}/exceptions` |  Listar   |
 |   GET   | `/api/v1/logs/exception/{id}`         |  Buscar   |
 
+## Docker compose
 
-
-## Docker
-
-### Banco
-
-``` yaml
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: healthcheck
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: senha
-    ports:
-      - "5432:5432"
+### Opção 1: Apenas banco de dados (recomendado para desenvolvimento)
+```bash
+docker-compose -f docker-compose.db.yml up -d
 ```
 
-### App
+### Opção 2: Completo (aplicação e banco)
 
-``` bash
-mvn clean package
-docker build -t healthcheck-api .
-docker run -p 8080:8080 healthcheck-api
+```bash
+docker compose -f docker-compose.app.yml up -d --build
 ```

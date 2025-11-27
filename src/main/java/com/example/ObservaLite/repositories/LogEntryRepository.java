@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface LogEntryRepository extends JpaRepository<LogEntry, UUID> {
     Page<LogEntry> findByProjectId(UUID projectId, Pageable pageable);
+    List<LogEntry> findByProjectId(UUID projectId);
 }

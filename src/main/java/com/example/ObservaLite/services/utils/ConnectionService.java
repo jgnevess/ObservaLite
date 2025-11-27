@@ -1,8 +1,7 @@
-package com.example.ObservaLite.services;
+package com.example.ObservaLite.services.utils;
 
 import com.example.ObservaLite.utils.UrlBuilder;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;

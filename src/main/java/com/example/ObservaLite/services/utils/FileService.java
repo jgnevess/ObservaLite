@@ -15,7 +15,8 @@ import java.util.UUID;
 
 @Component
 public abstract class FileService {
-    private static final String pathSource = "src/reports/";
+    private static final String REPORTS_PATH =
+            System.getProperty("user.dir") + "/src/reports/";
 
     public static String genReportHealthCheck(List<HealthCheckResult> healthCheckResults) {
         Date dateTime = new Date();
@@ -40,7 +41,7 @@ public abstract class FileService {
                         .append(h.isHealthy()).append("\n")
         );
         try {
-            String filename = pathSource + "health_check" + UUID.randomUUID() + ".csv";
+            String filename = REPORTS_PATH + "health_check" + UUID.randomUUID() + ".csv";
             Path path = Path.of(filename);
             Files.writeString(path, sb.toString());
             return filename;
@@ -74,9 +75,8 @@ public abstract class FileService {
                         .append(h.getMetadata().getExtraInfo()).append("\n")
         );
         try {
-            String filename = "log_entry" + UUID.randomUUID() + ".csv";
-            String pathFileName = pathSource + filename;
-            Path path = Path.of(pathFileName);
+            String filename = REPORTS_PATH+ "log_entry" + UUID.randomUUID() + ".csv";
+            Path path = Path.of(filename);
             Files.writeString(path, sb.toString());
             return filename;
         } catch (IOException e) {
@@ -105,9 +105,8 @@ public abstract class FileService {
                         .append(h.getResolvedAt()).append("\n")
         );
         try {
-            String filename = "log_entry" + UUID.randomUUID() + ".csv";
-            String pathFileName = pathSource + filename;
-            Path path = Path.of(pathFileName);
+            String filename = REPORTS_PATH + "log_entry" + UUID.randomUUID() + ".csv";
+            Path path = Path.of(filename);
             Files.writeString(path, sb.toString());
             return filename;
         } catch (IOException e) {

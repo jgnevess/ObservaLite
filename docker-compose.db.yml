@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: observalite
       POSTGRES_USER: joao
       POSTGRES_PASSWORD: 123456789
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
@@ -15,6 +16,11 @@ services:
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - observalite-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U joao -d observalite"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   pgadmin:
     image: dpage/pgadmin4

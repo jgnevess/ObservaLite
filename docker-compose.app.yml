@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: observalite-postgres
+    environment:
+      POSTGRES_DB: observalite
+      POSTGRES_USER: joao
+      POSTGRES_PASSWORD: 123456789
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - observalite-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U joao -d observalite"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: observalite-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/observalite
+      SPRING_DATASOURCE_USERNAME: joao
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: true
+    ports:
+      - "8080:8080"
+    networks:
+      - observalite-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./src/reports:/app/src/reports
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: observalite-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@observalite.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"
+    networks:
+      - observalite-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  observalite-network:
+    driver: bridge

@@ -51,7 +51,7 @@ public class HealthCheckController {
     public ResponseEntity<Resource> downloadCsvReport(@PathVariable UUID projectId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         Resource csv = healthCheckService.getReportByProjectIdAndPeriod(projectId, startDate, endDate);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"dados.csv\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+csv.getFilename())
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv);
     }

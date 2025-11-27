@@ -32,3 +32,6 @@ src/reports
 
 ### VS Code ###
 .vscode/
+
+### Files ###
+*.out
