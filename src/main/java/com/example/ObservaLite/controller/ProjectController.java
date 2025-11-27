@@ -5,6 +5,7 @@ import com.example.ObservaLite.dtos.ProjectResponseDto;
 import com.example.ObservaLite.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +28,10 @@ public class ProjectController {
 
     @Operation(summary = "Endpoint para cadastro de projeto.", description = "OBS: A chave da api fica ciptografada em nosso banco de dados")
     @PostMapping
-    public ResponseEntity<ProjectResponseDto> createProject(@RequestBody ProjectCreateDto projectCreateDto) {
-        ProjectResponseDto response = projectService.createProject(projectCreateDto);
+    public ResponseEntity<ProjectResponseDto> createProject(@RequestBody ProjectCreateDto projectCreateDto, HttpServletRequest request) {
+        UUID userId = (UUID) request.getSession().getAttribute("userId");
+        if(userId == null) return ResponseEntity.status(403).build();
+        ProjectResponseDto response = projectService.createProject(projectCreateDto, userId);
         return ResponseEntity.status(201).body(response);
     }
 

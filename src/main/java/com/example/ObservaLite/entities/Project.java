@@ -1,14 +1,13 @@
 package com.example.ObservaLite.entities;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 import com.example.ObservaLite.dtos.ProjectCreateDto;
+import com.example.ObservaLite.entities.auth.User;
 import com.example.ObservaLite.entities.enums.ProjectStatus;
 
-import com.example.ObservaLite.services.utils.HashService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +15,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
 @Table(name = "projects")
@@ -51,8 +49,11 @@ public class Project {
     @JsonIgnore
     private List<ExceptionLog> exceptions;
 
+    @ManyToOne
+    private User user;
 
-    public Project(ProjectCreateDto projectCreateDto, String  apiKey) {
+
+    public Project(ProjectCreateDto projectCreateDto, String  apiKey, User user) {
         this.name = projectCreateDto.name();
         this.url = projectCreateDto.url();
         this.checkInterval = projectCreateDto.checkInterval() * 1000L;
@@ -60,5 +61,6 @@ public class Project {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.apiKeyHash = apiKey;
+        this.user = user;
     }
 }

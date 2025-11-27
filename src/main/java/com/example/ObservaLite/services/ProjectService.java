@@ -3,6 +3,7 @@ package com.example.ObservaLite.services;
 import com.example.ObservaLite.dtos.ProjectCreateDto;
 import com.example.ObservaLite.dtos.ProjectResponseDto;
 import com.example.ObservaLite.entities.Project;
+import com.example.ObservaLite.entities.auth.User;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ProjectRepository;
 import com.example.ObservaLite.services.utils.ConnectionService;
@@ -25,14 +26,14 @@ public class ProjectService {
     }
 
 
-    public ProjectResponseDto createProject(ProjectCreateDto projectCreateDto) {
+    public ProjectResponseDto createProject(ProjectCreateDto projectCreateDto, UUID userId) {
         String apiKey = hashService.hash(projectCreateDto.apiKey());
         try {
             ConnectionService.Connect(projectCreateDto.url());
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
-        Project project = new Project(projectCreateDto, apiKey);
+        Project project = new Project(projectCreateDto, apiKey, new User());
         return  new ProjectResponseDto(projectRepository.save(project));
     }
 

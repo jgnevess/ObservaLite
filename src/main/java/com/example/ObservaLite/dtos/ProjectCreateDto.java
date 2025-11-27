@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Schema(description = "DTO para criar um projeto")
 public record ProjectCreateDto(

@@ -1,0 +1,3 @@
+ALTER TABLE app_users DROP COLUMN valid_email;
+
+ALTER TABLE app_users ADD COLUMN valid_email VARCHAR(255) NOT NULL UNIQUE;
