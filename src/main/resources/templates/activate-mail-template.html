@@ -1,0 +1,77 @@
+<!-- Email HTML - ObservaLite -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Ative sua conta - ObservaLite</title>
+    <style>
+        /* Inline-friendly basic styles */
+        body { margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, sans-serif; color:#333333; }
+        table { border-collapse:collapse; }
+        .container { width:100%; max-width:600px; margin:0 auto; }
+        .card { background:#ffffff; border-radius:8px; padding:24px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+        .header { text-align:center; padding-bottom:12px; }
+        .logo { width:72px; height:72px; display:block; margin:0 auto 8px auto; background:#222; color:#fff; line-height:72px; border-radius:12px; font-weight:700; }
+        h1 { margin:0 0 8px 0; font-size:20px; color:#111; }
+        p { margin:0 0 12px 0; font-size:14px; line-height:1.5; color:#444; }
+        .btn { display:inline-block; padding:12px 20px; border-radius:8px; text-decoration:none; font-weight:600; }
+        .btn-primary { background:#2563eb; color:#ffffff; }
+        .muted { color:#7a7a7a; font-size:12px; }
+        .footer { text-align:center; color:#9aa0a6; font-size:12px; padding-top:16px; }
+        .code { display:inline-block; padding:10px 14px; background:#f1f5f9; border-radius:6px; font-family:monospace; font-size:16px; }
+        @media (max-width:420px) {
+          .card { padding:16px; }
+          .logo { width:56px; height:56px; line-height:56px; border-radius:10px; }
+        }
+    </style>
+</head>
+<body>
+<table class="container" role="presentation" width="100%">
+    <tr>
+        <td style="padding:24px;">
+            <table class="card" role="presentation" width="100%">
+                <tr>
+                    <td class="header">
+                        <!-- Substitua pelo <img src="cid:logo"> ou pelo seu URL de imagem se preferir -->
+                        <div class="logo" aria-hidden="true">OL</div>
+                        <div style="font-size:13px;color:#55606a;font-weight:600;">ObservaLite</div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h1>Ative sua conta, {{userName}}</h1>
+                        <p>Obrigado por criar uma conta no <strong>ObservaLite</strong>. Sua conta ficará ativa por <strong>{{daysTrial}} dias</strong> para você testar o Checker e ver como funciona.</p>
+
+                        <p>Para ativar sua conta e começar a usar a aplicação, clique cole o codigo abaixo na api para validação:</p>
+
+                        <p style="text-align:center;"><span class="code">{{activationCode}}</span></p>
+
+                        <hr style="border:none;border-top:1px solid #eef2f6;margin:20px 0;">
+
+                        <p class="muted">Dúvidas? Responda este e-mail ou visite a nossa documentação em <a href="{{docsUrl}}" target="_blank" style="color:#2563eb;text-decoration:none">{{docsUrl}}</a>.</p>
+
+                        <p class="muted">Se você não solicitou esta conta, ignore este e-mail — o link expira em {{codeExpiryMinutes}} minutos.</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="footer">
+                        <div style="margin-top:12px;">
+                            ObservaLite • Ferramenta de verificação rápida de serviços<br>
+                            <span class="muted">Rua Exemplo, 123 — São Paulo • <a href="{{privacyUrl}}" style="color:#9aa0a6;text-decoration:none">Política de Privacidade</a></span>
+                        </div>
+
+                        <div style="margin-top:8px; font-size:11px; color:#b0b6bb;">
+                            <a href="{{unsubscribeUrl}}" style="color:#b0b6bb;text-decoration:underline;">Cancelar inscrição</a>
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

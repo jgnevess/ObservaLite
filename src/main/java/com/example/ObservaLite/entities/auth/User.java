@@ -3,6 +3,7 @@ package com.example.ObservaLite.entities.auth;
 import com.example.ObservaLite.dtos.CreateUserDto;
 import com.example.ObservaLite.entities.Project;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.time.Instant;
@@ -24,9 +25,12 @@ public class User {
     private String firstName;
     private String lastName;
     private String password;
+    @Email
     private String validEmail;
     private Instant createdAt;
     private Instant accountExpiresAt;
+    private boolean isActive;
+    private String activateCode;
 
     @OneToOne(mappedBy = "user")
     private UserSession userSession;
