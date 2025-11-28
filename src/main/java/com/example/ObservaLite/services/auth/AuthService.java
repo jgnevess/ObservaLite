@@ -2,16 +2,20 @@ package com.example.ObservaLite.services.auth;
 
 import com.example.ObservaLite.dtos.ActivateResponse;
 import com.example.ObservaLite.dtos.CreateUserDto;
+import com.example.ObservaLite.dtos.CredentiasLogin;
 import com.example.ObservaLite.dtos.UserResponseDto;
 import com.example.ObservaLite.entities.auth.User;
+import com.example.ObservaLite.entities.auth.UserSession;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.UserRepository;
+import com.example.ObservaLite.repositories.UserSessionRepository;
 import com.example.ObservaLite.services.utils.HashService;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -20,11 +24,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final HashService hashService;
     private final EmailService emailService;
+    private final UserSessionRepository userSessionRepository;
 
-    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService) {
+    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService, UserSessionRepository userSessionRepository) {
         this.userRepository = userRepository;
         this.hashService = hashService;
         this.emailService = emailService;
+        this.userSessionRepository = userSessionRepository;
     }
 
     public UserResponseDto registerUser(CreateUserDto createUserDto) {
@@ -57,5 +63,19 @@ public class AuthService {
 
         response.setUserResponseDto(new UserResponseDto(user));
         return response;
+    }
+
+    public UserSession login(CredentiasLogin credentiasLogin) {
+        User user = userRepository.findByValidEmail(credentiasLogin.getEmail()).orElseThrow(() -> new NotFoundException(404, "User not found"));
+
+        if(!hashService.matches(credentiasLogin.getPassword(), user.getPassword())) {
+            return null;
+        }
+        UserSession userSession = new UserSession();
+        userSession.setCreatedAt(Instant.now());
+        userSession.setUser(user);
+        userSession.setExpiresAt(Instant.now().plus(3, ChronoUnit.HOURS));
+        return userSessionRepository.save(userSession);
+
     }
 }

@@ -29,7 +29,7 @@ public class ProjectController {
     @Operation(summary = "Endpoint para cadastro de projeto.", description = "OBS: A chave da api fica ciptografada em nosso banco de dados")
     @PostMapping
     public ResponseEntity<ProjectResponseDto> createProject(@RequestBody ProjectCreateDto projectCreateDto, HttpServletRequest request) {
-        UUID userId = (UUID) request.getSession().getAttribute("userId");
+        UUID userId = (UUID) request.getSession().getAttribute("session_id");
         if(userId == null) return ResponseEntity.status(403).build();
         ProjectResponseDto response = projectService.createProject(projectCreateDto, userId);
         return ResponseEntity.status(201).body(response);
