@@ -1,10 +1,14 @@
 package com.example.ObservaLite.controller;
 
+import com.example.ObservaLite.controller.utils.SessionHelper;
 import com.example.ObservaLite.entities.HealthCheckResult;
 import com.example.ObservaLite.entities.Incident;
+import com.example.ObservaLite.entities.auth.SessionData;
 import com.example.ObservaLite.services.IncidentService;
+import com.example.ObservaLite.services.auth.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,35 +29,50 @@ import java.util.UUID;
 public class IncidentsController {
 
     private final IncidentService incidentService;
+    private final SessionService sessionService;
 
-    public IncidentsController(IncidentService incidentService) {
+    public IncidentsController(IncidentService incidentService, SessionService sessionService) {
         this.incidentService = incidentService;
+        this.sessionService = sessionService;
     }
 
     @Operation(summary = "Endpoint busca todos os incidents pelo id do projeto, dentro de um periodo e páginados.")
     @GetMapping("/{projectId}/incidents/date-between")
-    public ResponseEntity<Page<Incident>> listByProjectFilter(@PathVariable UUID projectId, int pageNumber, int pageSize, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(incidentService.getByProjectIdAndPeriod(projectId, pageNumber, pageSize, startDate, endDate));
+    public ResponseEntity<Page<Incident>> listByProjectFilter(HttpServletRequest request, @PathVariable UUID projectId, int pageNumber, int pageSize, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        SessionData sessionData = loadUser(request);
+        if (sessionData == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(incidentService.getByProjectIdAndPeriod(sessionData.userId(), projectId, pageNumber, pageSize, startDate, endDate));
     }
 
     @Operation(summary = "Endpoint busca todos os incidents pelo id do projeto páginados.")
     @GetMapping("/{projectId}/incidents")
-    public ResponseEntity<Page<Incident>> listByProject(@PathVariable UUID projectId, int pageNumber, int pageSize) {
-        return ResponseEntity.ok(incidentService.getByProjectId(projectId, pageNumber, pageSize));
+    public ResponseEntity<Page<Incident>> listByProject(HttpServletRequest request, @PathVariable UUID projectId, int pageNumber, int pageSize) {
+        SessionData sessionData = loadUser(request);
+        if (sessionData == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(incidentService.getByProjectId(sessionData.userId(), projectId, pageNumber, pageSize));
     }
 
     @Operation(summary = "Endpoint busca um incident específico pelo id.")
     @GetMapping("/{incidentId}")
-    public ResponseEntity<Incident> listByProject(@PathVariable UUID incidentId) {
-        return ResponseEntity.ok(incidentService.getById(incidentId));
+    public ResponseEntity<Incident> listByProject(HttpServletRequest request, @PathVariable UUID incidentId) {
+        SessionData sessionData = loadUser(request);
+        if (sessionData == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(incidentService.getById(sessionData.userId(), incidentId));
     }
 
     @GetMapping("/{projectId}/csv-download")
-    public ResponseEntity<Resource> downloadCsvReport(@PathVariable UUID projectId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        Resource csv = incidentService.getReportByProjectIdAndPeriod(projectId, startDate, endDate);
+    public ResponseEntity<Resource> downloadCsvReport(HttpServletRequest request, @PathVariable UUID projectId, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        SessionData sessionData = loadUser(request);
+        if (sessionData == null) return ResponseEntity.status(401).build();
+        Resource csv = incidentService.getReportByProjectIdAndPeriod(sessionData.userId(), projectId, startDate, endDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+csv.getFilename())
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv);
+    }
+
+    private SessionData loadUser(HttpServletRequest request) {
+        String sessionId = SessionHelper.getSessionId(request);
+        return sessionService.loadUser(sessionId);
     }
 }

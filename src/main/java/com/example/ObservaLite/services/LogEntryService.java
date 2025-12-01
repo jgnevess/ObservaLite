@@ -53,35 +53,41 @@ public class LogEntryService {
         logEntry.setLevel(level);
         logEntry.setMetadata(metadata);
 
-        var res = logEntryRepository.save(logEntry);
+        logEntryRepository.save(logEntry);
     }
 
-    public Page<LogEntry> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+    public Page<LogEntry> getByProjectIdAndPeriod(UUID userId, UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<LogEntry> page = logEntryRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Log not found");
         List<LogEntry> filtered = page.getContent().stream()
                 .filter(le -> le.getProject().getLastCheckedAt().isAfter(startInstant) && le.getProject().getLastCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
-    public Page<LogEntry> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+    public Page<LogEntry> getByProjectId(UUID userId, UUID projectId, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("level").descending());
-        return logEntryRepository.findByProjectId(projectId, pageable);
+        Page<LogEntry> page =  logEntryRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Log not found");
+        return page;
     }
 
-    public LogEntry getById(UUID id) {
-        return logEntryRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Log not found"));
+    public LogEntry getById(UUID userId, UUID id) {
+        LogEntry logEntry = logEntryRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Log not found"));
+        if(!logEntry.getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Log not found");
+        return logEntry;
     }
 
-    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+    public Resource getReportByProjectIdAndPeriod(UUID userId, UUID projectId, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         List<LogEntry> results = logEntryRepository.findByProjectId(projectId);
+        if(!results.get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Log not found");
         List<LogEntry> filtered = results.stream()
                 .filter(entry -> entry.getTimestamp().isAfter(startInstant) && entry.getTimestamp().isBefore(endInstant))
                 .collect(Collectors.toList());

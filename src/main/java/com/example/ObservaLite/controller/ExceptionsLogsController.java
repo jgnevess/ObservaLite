@@ -38,7 +38,7 @@ public class ExceptionsLogsController {
     public ResponseEntity<Page<ExceptionLog>> listByProjectFilter(HttpServletRequest request, @PathVariable UUID projectId, int pageNumber, int pageSize, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         SessionData sessionData = loadUser(request);
         if (sessionData == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(logsExceptionService.getByProjectIdAndPeriod(projectId, pageNumber, pageSize, startDate, endDate));
+        return ResponseEntity.ok(logsExceptionService.getByProjectIdAndPeriod(sessionData.userId(), projectId, pageNumber, pageSize, startDate, endDate));
     }
 
     @Operation(summary = "Endpoint busca todos os logs pelo id do projeto páginados.")
@@ -46,7 +46,7 @@ public class ExceptionsLogsController {
     public ResponseEntity<Page<ExceptionLog>> ListByProjectId(HttpServletRequest request, @PathVariable UUID projectId, int pageNumber, int pageSize) {
         SessionData sessionData = loadUser(request);
         if (sessionData == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(logsExceptionService.getByProjectId(projectId, pageNumber, pageSize));
+        return ResponseEntity.ok(logsExceptionService.getByProjectId(sessionData.userId() ,projectId, pageNumber, pageSize));
     }
 
     @Operation(summary = "Endpoint busca um log específico pelo id.")
@@ -54,7 +54,7 @@ public class ExceptionsLogsController {
     public ResponseEntity<ExceptionLog> ListByProjectId(HttpServletRequest request, @PathVariable UUID id) {
         SessionData sessionData = loadUser(request);
         if (sessionData == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(logsExceptionService.getById(id));
+        return ResponseEntity.ok(logsExceptionService.getById(sessionData.userId(), id));
     }
 
     private SessionData loadUser(HttpServletRequest request) {

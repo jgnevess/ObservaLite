@@ -45,7 +45,7 @@ public class ProjectService {
         return projectRepository.findAllByUserId(userId).stream().map(ProjectResponseDto::new).toList();
     }
 
-    public ProjectResponseDto getProject(UUID id, UUID userId) {
+    public ProjectResponseDto getProject(UUID userId, UUID id) {
         Project project = projectRepository
                 .findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
         if (!project.getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");

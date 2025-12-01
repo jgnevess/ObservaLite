@@ -68,32 +68,38 @@ public class IncidentService {
                 .orElse("");
     }
 
-    public Page<Incident> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+    public Page<Incident> getByProjectId(UUID userId, UUID projectId, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("occurredAt").descending());
-        return incidentRepository.findByProjectId(projectId, pageable);
+        Page<Incident> page = incidentRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Incident not found");
+        return page;
     }
 
-    public Incident getById(UUID id) {
-        return incidentRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Incident not found"));
+    public Incident getById(UUID userId, UUID id) {
+        Incident incident = incidentRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Incident not found"));
+        if (!incident.getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Incident not found");
+        return incident;
     }
 
-    public Page<Incident> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+    public Page<Incident> getByProjectIdAndPeriod(UUID userId, UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<Incident> page = incidentRepository.findByProjectId(projectId, pageable);
+        if (!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Incident not found");
         List<Incident> filtered = page.getContent().stream()
                 .filter(i -> i.getProject().getLastCheckedAt().isAfter(startInstant) && i.getProject().getLastCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
-    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+    public Resource getReportByProjectIdAndPeriod(UUID userId, UUID projectId, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         List<Incident> results = incidentRepository.findByProjectId(projectId);
+        if (!results.get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Incident not found");
         List<Incident> filtered = results.stream()
                 .filter(ic -> ic.getProject().getLastCheckedAt().isAfter(startInstant) && ic.getProject().getLastCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());

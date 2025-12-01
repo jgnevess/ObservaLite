@@ -23,24 +23,29 @@ public class LogsExceptionService {
         this.exceptionLogRepository = exceptionLogRepository;
     }
 
-    public Page<ExceptionLog> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+    public Page<ExceptionLog> getByProjectIdAndPeriod(UUID userId, UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<ExceptionLog> page = exceptionLogRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
         List<ExceptionLog> filtered = page.getContent().stream()
                 .filter(el -> el.getProject().getLastCheckedAt().isAfter(startInstant) && el.getProject().getLastCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
-    public Page<ExceptionLog> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+    public Page<ExceptionLog> getByProjectId(UUID userId, UUID projectId, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return exceptionLogRepository.findByProjectId(projectId, pageable);
+        Page<ExceptionLog> page = exceptionLogRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
+        return page;
     }
 
-    public ExceptionLog getById(UUID id) {
-        return exceptionLogRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Exception log not found"));
+    public ExceptionLog getById(UUID userId, UUID id) {
+        ExceptionLog exceptionLog = exceptionLogRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Exception log not found"));
+        if(exceptionLog.getProject().getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
+        return exceptionLog;
     }
 }

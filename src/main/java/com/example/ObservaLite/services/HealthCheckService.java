@@ -145,32 +145,38 @@ public class HealthCheckService {
         return new HealthCheckResponse(result, userAgent);
     }
 
-    public Page<HealthCheckResult> getByProjectIdAndPeriod(UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
+    public Page<HealthCheckResult> getByProjectIdAndPeriod(UUID userId, UUID projectId, int pageNumber, int pageSize, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("checkedAt").descending());
         Page<HealthCheckResult> page = healthCheckResultRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw  new NotFoundException(404 ,"Health check not found");
         List<HealthCheckResult> filtered = page.getContent().stream()
                 .filter(hc -> hc.getCheckedAt().isAfter(startInstant) && hc.getCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
-    public Page<HealthCheckResult> getByProjectId(UUID projectId, int pageNumber, int pageSize) {
+    public Page<HealthCheckResult> getByProjectId(UUID userId, UUID projectId, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("checkedAt").descending());
-        return healthCheckResultRepository.findByProjectId(projectId, pageable);
+        Page<HealthCheckResult> page = healthCheckResultRepository.findByProjectId(projectId, pageable);
+        if(!page.get().toList().get(0).getProject().getUser().getId().equals(userId)) throw  new NotFoundException(404 ,"Health check not found");
+        return page;
     }
 
-    public HealthCheckResult getById(UUID healthCheckId) {
-        return healthCheckResultRepository.findById(healthCheckId).orElseThrow(() -> new NotFoundException(404 ,"Health check not found"));
+    public HealthCheckResult getById(UUID userId, UUID healthCheckId) {
+        HealthCheckResult healthCheckResult = healthCheckResultRepository.findById(healthCheckId).orElseThrow(() -> new NotFoundException(404 ,"Health check not found"));
+        if(!healthCheckResult.getProject().getUser().getId().equals(userId)) throw  new NotFoundException(404 ,"Health check not found");
+        return healthCheckResult;
     }
 
-    public Resource getReportByProjectIdAndPeriod(UUID projectId, LocalDate start, LocalDate end) {
+    public Resource getReportByProjectIdAndPeriod(UUID userId, UUID projectId, LocalDate start, LocalDate end) {
         Instant startInstant = start.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant endInstant = end.atStartOfDay(ZoneOffset.UTC).plusHours(23).plusMinutes(59).plusSeconds(59).toInstant();
 
         List<HealthCheckResult> results = healthCheckResultRepository.findByProjectId(projectId);
+        if(!results.get(0).getProject().getUser().getId().equals(userId)) throw  new NotFoundException(404 ,"Health check not found");
         List<HealthCheckResult> filtered = results.stream()
                 .filter(hc -> hc.getCheckedAt().isAfter(startInstant) && hc.getCheckedAt().isBefore(endInstant))
                 .collect(Collectors.toList());
