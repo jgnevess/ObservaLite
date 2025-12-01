@@ -32,9 +32,6 @@ public class User {
     private boolean isActive;
     private String activateCode;
 
-    @OneToOne(mappedBy = "user")
-    private UserSession userSession;
-
     @OneToMany(mappedBy = "user")
     private List<Project> projects;
 

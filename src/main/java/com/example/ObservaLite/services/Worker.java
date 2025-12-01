@@ -3,6 +3,7 @@ package com.example.ObservaLite.services;
 import com.example.ObservaLite.dtos.HealthCheckResponse;
 import com.example.ObservaLite.entities.ExceptionLog;
 import com.example.ObservaLite.entities.Project;
+import com.example.ObservaLite.entities.auth.UserSession;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.ExceptionLogRepository;
 import com.example.ObservaLite.repositories.ProjectRepository;
@@ -89,5 +90,4 @@ public class Worker {
             }
         }
     }
-
 }

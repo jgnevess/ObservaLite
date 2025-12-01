@@ -8,14 +8,12 @@ import com.example.ObservaLite.entities.auth.User;
 import com.example.ObservaLite.entities.auth.UserSession;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.UserRepository;
-import com.example.ObservaLite.repositories.UserSessionRepository;
 import com.example.ObservaLite.services.utils.HashService;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,13 +22,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final HashService hashService;
     private final EmailService emailService;
-    private final UserSessionRepository userSessionRepository;
+    private final SessionService sessionService;
 
-    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService, UserSessionRepository userSessionRepository) {
+    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService, SessionService sessionService) {
         this.userRepository = userRepository;
         this.hashService = hashService;
         this.emailService = emailService;
-        this.userSessionRepository = userSessionRepository;
+        this.sessionService = sessionService;
     }
 
     public UserResponseDto registerUser(CreateUserDto createUserDto) {
@@ -71,11 +69,13 @@ public class AuthService {
         if(!hashService.matches(credentiasLogin.getPassword(), user.getPassword())) {
             return null;
         }
+        UUID id = UUID.randomUUID();
         UserSession userSession = new UserSession();
+        userSession.setId(id);
         userSession.setCreatedAt(Instant.now());
-        userSession.setUser(user);
         userSession.setExpiresAt(Instant.now().plus(3, ChronoUnit.HOURS));
-        return userSessionRepository.save(userSession);
 
+        sessionService.saveSession(id, user, Duration.ofMinutes(180));
+        return userSession;
     }
 }

@@ -6,6 +6,7 @@ import com.example.ObservaLite.dtos.CredentiasLogin;
 import com.example.ObservaLite.dtos.UserResponseDto;
 import com.example.ObservaLite.entities.auth.UserSession;
 import com.example.ObservaLite.services.auth.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class AuthController {
         if(res == null) return ResponseEntity.status(400).build();
         ResponseCookie cookie = ResponseCookie.from("session_id", res.getId().toString())
                 .httpOnly(true)
-//                .secure(true)
+                .secure(false)
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(Duration.ofHours(3))
