@@ -41,18 +41,21 @@ public class ProjectService {
         return  new ProjectResponseDto(projectRepository.save(project));
     }
 
-    public List<ProjectResponseDto> listProjects() {
-        return projectRepository.findAll().stream().map(ProjectResponseDto::new).toList();
+    public List<ProjectResponseDto> listProjects(UUID userId) {
+        return projectRepository.findAllByUserId(userId).stream().map(ProjectResponseDto::new).toList();
     }
 
-    public ProjectResponseDto getProject(UUID id) {
-        return new ProjectResponseDto(projectRepository
-                .findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found")));
+    public ProjectResponseDto getProject(UUID id, UUID userId) {
+        Project project = projectRepository
+                .findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
+        if (!project.getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
+        return new ProjectResponseDto(project);
     }
 
-    public ProjectResponseDto updateProject(ProjectCreateDto projectCreateDto, UUID id) {
+    public ProjectResponseDto updateProject(UUID userId,ProjectCreateDto projectCreateDto, UUID id) {
         Project project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
         String apiKey = hashService.hash(projectCreateDto.apiKey());
+        if (!project.getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
         try {
             ConnectionService.Connect(projectCreateDto.url());
         } catch (RuntimeException e) {
@@ -66,8 +69,9 @@ public class ProjectService {
         return new ProjectResponseDto(projectRepository.save(project));
     }
 
-    public void deleteProject(UUID id) {
+    public void deleteProject(UUID userId, UUID id) {
         Project project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException(404, "Project not found"));
+        if (!project.getUser().getId().equals(userId)) throw new NotFoundException(404, "Project not found");
         projectRepository.delete(project);
     }
 }

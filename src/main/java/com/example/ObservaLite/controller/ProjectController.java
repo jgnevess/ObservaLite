@@ -50,40 +50,39 @@ public class ProjectController {
         return ResponseEntity.status(201).body(response);
     }
 
-    @Operation(summary = "Listar todos os projetos cadastrados no sistema")
+    @Operation(summary = "Listar todos os projetos do usuario cadastrados no sistema")
     @GetMapping
     public ResponseEntity<List<ProjectResponseDto>> listProjects(HttpServletRequest request) {
         SessionData sessionData = loadUser(request);
-        if (sessionData == null) return ResponseEntity.status(403).build();
-
-        return ResponseEntity.ok(projectService.listProjects());
+        if (sessionData == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(projectService.listProjects(sessionData.userId()));
     }
 
     @Operation(summary = "Busca um unico projeto pelo Id")
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponseDto> getProjectById(HttpServletRequest request, @PathVariable UUID id) {
         SessionData sessionData = loadUser(request);
-        if (sessionData == null) return ResponseEntity.status(403).build();
+        if (sessionData == null) return ResponseEntity.status(401).build();
 
-        return ResponseEntity.ok(projectService.getProject(id));
+        return ResponseEntity.ok(projectService.getProject(id, sessionData.userId()));
     }
 
     @Operation(summary = "Alterações do projeto no banco de dados")
     @PutMapping("/{id}")
     public ResponseEntity<ProjectResponseDto> updateProject(HttpServletRequest request, @PathVariable UUID id, @RequestBody ProjectCreateDto projectCreateDto) {
         SessionData sessionData = loadUser(request);
-        if (sessionData == null) return ResponseEntity.status(403).build();
+        if (sessionData == null) return ResponseEntity.status(401).build();
 
-        return ResponseEntity.ok(projectService.updateProject(projectCreateDto, id));
+        return ResponseEntity.ok(projectService.updateProject(sessionData.userId(), projectCreateDto, id));
     }
 
     @Operation(summary = "Excluir o projeto e todos os seus logs e healthy checks")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(HttpServletRequest request, @PathVariable UUID id) {
         SessionData sessionData = loadUser(request);
-        if (sessionData == null) return ResponseEntity.status(403).build();
+        if (sessionData == null) return ResponseEntity.status(401).build();
 
-        projectService.deleteProject(id);
+        projectService.deleteProject(sessionData.userId(), id);
         return ResponseEntity.noContent().build();
     }
 
@@ -91,5 +90,4 @@ public class ProjectController {
         String sessionId = SessionHelper.getSessionId(request);
         return sessionService.loadUser(sessionId);
     }
-
 }
