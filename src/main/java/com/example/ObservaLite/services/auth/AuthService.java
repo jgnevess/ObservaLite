@@ -9,6 +9,8 @@ import com.example.ObservaLite.entities.auth.UserSession;
 import com.example.ObservaLite.exceptions.NotFoundException;
 import com.example.ObservaLite.repositories.UserRepository;
 import com.example.ObservaLite.services.utils.HashService;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -23,15 +25,19 @@ public class AuthService {
     private final HashService hashService;
     private final EmailService emailService;
     private final SessionService sessionService;
+    private final Validator validator;
 
-    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService, SessionService sessionService) {
+    public AuthService(UserRepository userRepository, HashService hashService, EmailService emailService, SessionService sessionService, Validator validator) {
         this.userRepository = userRepository;
         this.hashService = hashService;
         this.emailService = emailService;
         this.sessionService = sessionService;
+        this.validator = validator;
     }
 
     public UserResponseDto registerUser(CreateUserDto createUserDto) {
+        var violations = validator.validate(createUserDto);
+        if (!violations.isEmpty()) throw new ConstraintViolationException(violations);
         String token = UUID.randomUUID().toString().substring(0, 8);
         User user = new User(createUserDto);
         user.setPassword(hashService.hash(createUserDto.getPassword()));

@@ -12,10 +12,7 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode
 public class UserSession {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
     private Instant createdAt;
     private Instant expiresAt;
 }
